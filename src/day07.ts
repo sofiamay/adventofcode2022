@@ -53,33 +53,26 @@ export class FileNode extends TreeNode {
   }
 }
 
-export class DirEntry {
-  name: string;
-  node: TreeNode;
-
-  constructor(name: string, node: TreeNode) {
-    this.name = name;
-    this.node = node;
-  }
-
-  format(indent: number = 0): string {
-    return `${"  ".repeat(indent)}${this.name} ${this.node.format(indent + 1)}`;
-  }
-}
-
 export class DirNode extends TreeNode {
-  entries: DirEntry[];
+  entries: Map<string, TreeNode>;
 
-  constructor(entries: DirEntry[] = []) {
+  constructor(entries?: Map<string, TreeNode>) {
     super();
-    this.entries = [...entries];
+    this.entries = new Map<string, TreeNode>();
+    if (entries !== undefined) {
+      for (const [key, value] of entries) {
+        this.entries.set(key, value);
+      }
+    }
   }
 
   format(indent: number = 0): string {
     let parts: string[] = ["/"];
-    this.entries.forEach((entry: DirEntry) => {
-      parts.push(entry.format(indent + 1));
-    });
+    for (const [name, node] of this.entries) {
+      parts.push(
+        `${"  ".repeat(indent + 1)}${name} ${node.format(indent + 2)}`
+      );
+    }
     return parts.join("\n");
   }
 }

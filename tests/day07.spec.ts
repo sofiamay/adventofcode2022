@@ -3,7 +3,7 @@
 import "mocha";
 import { assert, expect } from "chai";
 
-import day07, { CommandLog, FileNode, DirNode, DirEntry } from "../src/day07";
+import day07, { CommandLog, FileNode, DirNode, TreeNode } from "../src/day07";
 
 const exampleInput = `
 $ cd /
@@ -39,19 +39,25 @@ describe("DirTree", () => {
   });
 
   it("DirNode formatting", () => {
-    let tree = new DirNode([
-      new DirEntry("foo", new FileNode(12)),
-      new DirEntry(
-        "bar",
-        new DirNode([
-          new DirEntry("qux", new FileNode(3)),
-          new DirEntry(
-            "zzz",
-            new DirNode([new DirEntry("jj", new FileNode(42))])
+    let tree = new DirNode(
+      new Map<string, TreeNode>([
+        ["foo", new FileNode(12)],
+        [
+          "bar",
+          new DirNode(
+            new Map<string, TreeNode>([
+              ["qux", new FileNode(3)],
+              [
+                "zzz",
+                new DirNode(
+                  new Map<string, TreeNode>([["jj", new FileNode(42)]])
+                ),
+              ],
+            ])
           ),
-        ])
-      ),
-    ]);
+        ],
+      ])
+    );
 
     expect(tree.format()).to.equal(
       [
