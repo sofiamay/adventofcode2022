@@ -3,7 +3,7 @@
 import "mocha";
 import { assert, expect } from "chai";
 
-import day07, { CommandLog, FileNode, DirNode } from "../src/day07";
+import day07, { CommandLog, FileNode, DirNode, DirEntry } from "../src/day07";
 
 const exampleInput = `
 $ cd /
@@ -33,23 +33,37 @@ $ ls
 
 describe("DirTree", () => {
   it("FileNode formatting", () => {
-    let fn = new FileNode("abc", 12);
-    assert.equal(fn.format(), "- abc\t12");
-    assert.equal(fn.format(2), "  - abc\t12");
+    let fn = new FileNode(12);
+    assert.equal(fn.format(), "File(size: 12)");
+    assert.equal(fn.format(2), "File(size: 12)");
   });
 
-    it("DirNode formatting", () => {
-        let tree = new DirNode([
-            new DirNode([], [
-                new FileNode()
-            ])
-            ]
+  it("DirNode formatting", () => {
+    let tree = new DirNode([
+      new DirEntry("foo", new FileNode(12)),
+      new DirEntry(
+        "bar",
+        new DirNode([
+          new DirEntry("qux", new FileNode(3)),
+          new DirEntry(
+            "zzz",
+            new DirNode([new DirEntry("jj", new FileNode(42))])
+          ),
+        ])
+      ),
+    ]);
 
-        )
-        let fn = new FileNode("abc", 12);
-        assert.equal(fn.format(), "- abc\t12");
-        assert.equal(fn.format(2), "  - abc\t12");
-    });
+    expect(tree.format()).to.equal(
+      [
+        "/",
+        "  foo File(size: 12)",
+        "  bar /",
+        "      qux File(size: 3)",
+        "      zzz /",
+        "          jj File(size: 42)",
+      ].join("\n")
+    );
+  });
 });
 
 describe("Day 7", () => {

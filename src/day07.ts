@@ -34,36 +34,51 @@ function parseCommandLogs(input: string): CommandLog[] {
   return logs;
 }
 
-export class FileNode {
-  name: string;
+export class TreeNode {
+  format(indent: number = 0): string {
+    return "";
+  }
+}
+
+export class FileNode extends TreeNode {
   size: number;
 
-  constructor(name: string, size: number) {
-    this.name = name;
+  constructor(size: number) {
+    super();
     this.size = size;
   }
 
   format(indent: number = 0): string {
-    return `${" ".repeat(indent)}- ${this.name}\t${this.size}`;
+    return `File(size: ${this.size})`;
   }
 }
 
-export class DirNode {
-  dirs: DirNode[];
-  files: FileNode[];
+export class DirEntry {
+  name: string;
+  node: TreeNode;
 
-  constructor(dirs: DirNode[] = [], files: FileNode[] = []) {
-    this.dirs = [...dirs];
-    this.files = [...files];
+  constructor(name: string, node: TreeNode) {
+    this.name = name;
+    this.node = node;
   }
 
   format(indent: number = 0): string {
-    let parts: string[] = [];
-    this.dirs.forEach((node: DirNode) => {
-      parts.push(node.format(indent + 1));
-    });
-    this.files.forEach((node: FileNode) => {
-      parts.push(node.format(indent + 1));
+    return `${"  ".repeat(indent)}${this.name} ${this.node.format(indent + 1)}`;
+  }
+}
+
+export class DirNode extends TreeNode {
+  entries: DirEntry[];
+
+  constructor(entries: DirEntry[] = []) {
+    super();
+    this.entries = [...entries];
+  }
+
+  format(indent: number = 0): string {
+    let parts: string[] = ["/"];
+    this.entries.forEach((entry: DirEntry) => {
+      parts.push(entry.format(indent + 1));
     });
     return parts.join("\n");
   }
