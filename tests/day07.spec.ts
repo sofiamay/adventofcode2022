@@ -1,43 +1,84 @@
-import 'mocha';
-import { assert } from 'chai';
+// Problem Statement:
+// https://adventofcode.com/2022/day/7
+import "mocha";
+import { assert, expect } from "chai";
 
-import { helloWorld, goodBye } from '../src/day07';
-import npmPackage from '../src/day07';
+import day07, { CommandLog, FileNode, DirNode } from "../src/day07";
 
-describe('Boom', () => {
-  assert.equal(2, 2);
+const exampleInput = `
+$ cd /
+$ ls
+dir a
+14848514 b.txt
+8504156 c.dat
+dir d
+$ cd a
+$ ls
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
+$ cd ..
+$ cd ..
+$ cd d
+$ ls
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k
+`;
+
+describe("DirTree", () => {
+  it("FileNode formatting", () => {
+    let fn = new FileNode("abc", 12);
+    assert.equal(fn.format(), "- abc\t12");
+    assert.equal(fn.format(2), "  - abc\t12");
+  });
+
+    it("DirNode formatting", () => {
+        let tree = new DirNode([
+            new DirNode([], [
+                new FileNode()
+            ])
+            ]
+
+        )
+        let fn = new FileNode("abc", 12);
+        assert.equal(fn.format(), "- abc\t12");
+        assert.equal(fn.format(2), "  - abc\t12");
+    });
 });
 
-describe('NPM Package', () => {
-  it('should be an object', () => {
-    assert.isObject(npmPackage);
+describe("Day 7", () => {
+  it("some basic test", () => {
+    assert.equal(2, 2);
   });
 
-  it('should have a helloWorld property', () => {
-    assert.property(npmPackage, 'helloWorld');
-  });
-});
-
-describe('Hello World Function', () => {
-  it('should be a function', () => {
-    assert.isFunction(helloWorld);
-  });
-
-  it('should return the hello world message', () => {
-    const expected = 'Hello World from my example modern npm package!';
-    const actual = helloWorld();
-    assert.equal(actual, expected);
-  });
-});
-
-describe('Goodbye Function', () => {
-  it('should be a function', () => {
-    assert.isFunction(goodBye);
-  });
-
-  it('should return the goodbye message', () => {
-    const expected = 'Goodbye from my example modern npm package!';
-    const actual = goodBye();
-    assert.equal(actual, expected);
+  it("chunk input", () => {
+    expect(day07.parseCommandLogs(exampleInput)).to.eql([
+      new CommandLog("$ cd /"),
+      new CommandLog("$ ls", [
+        "dir a",
+        "14848514 b.txt",
+        "8504156 c.dat",
+        "dir d",
+      ]),
+      new CommandLog("$ cd a"),
+      new CommandLog("$ ls", ["dir e", "29116 f", "2557 g", "62596 h.lst"]),
+      new CommandLog("$ cd e"),
+      new CommandLog("$ ls", ["584 i"]),
+      new CommandLog("$ cd .."),
+      new CommandLog("$ cd .."),
+      new CommandLog("$ cd d"),
+      new CommandLog("$ ls", [
+        "4060174 j",
+        "8033020 d.log",
+        "5626152 d.ext",
+        "7214296 k",
+      ]),
+    ]);
   });
 });
