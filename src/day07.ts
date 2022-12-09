@@ -38,6 +38,10 @@ export class TreeNode {
   format(indent: number = 0): string {
     return "";
   }
+
+  recursiveSize(): number {
+    throw "NotImplemented";
+  }
 }
 
 export class FileNode extends TreeNode {
@@ -50,6 +54,10 @@ export class FileNode extends TreeNode {
 
   format(indent: number = 0): string {
     return `File(size: ${this.size})`;
+  }
+
+  recursiveSize(): number {
+    return this.size;
   }
 }
 
@@ -64,6 +72,26 @@ export class DirNode extends TreeNode {
         this.entries.set(key, value);
       }
     }
+  }
+
+  walk(
+    callbackfn: (path: string[], dir: DirNode) => void,
+    path: string[] = []
+  ): void {
+    callbackfn(path, this);
+    for (const [name, node] of this.entries) {
+      if (node instanceof DirNode) {
+        node.walk(callbackfn, [...path, name]);
+      }
+    }
+  }
+
+  recursiveSize(): number {
+    let acc = 0;
+    for (const [name, node] of this.entries) {
+      acc += node.recursiveSize();
+    }
+    return acc;
   }
 
   ensureDir(path: string[]): DirNode {
@@ -167,6 +195,36 @@ export function parseLS(ls: string[]): Map<string, TreeNode> {
     }
   });
   return results;
+}
+
+export function dirSizes(root: DirNode): Map<string[], number> {
+  let sizes = new Map<string[], number>();
+  root.walk((path: string[], dir: DirNode) => {
+    sizes.set(path, dir.recursiveSize());
+  });
+  return sizes;
+}
+
+export function dirsAtMost(dir: DirNode, limit: number = 100000): number {
+  let treeSizes = dirSizes(dir);
+  let acc = 0;
+  treeSizes.forEach((value: number, key: string[]) => {
+    if (value <= limit) {
+      acc += value;
+    }
+  });
+
+  return acc;
+}
+
+export function main(input: string): number {
+  let commandLogs = parseCommandLogs(input);
+  let builder = new TreeBuilder();
+  commandLogs.forEach((commandLog: CommandLog) => {
+    builder.watch(commandLog);
+  });
+
+  return dirsAtMost(builder.root);
 }
 
 export default {
