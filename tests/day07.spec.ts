@@ -4,6 +4,7 @@ import "mocha";
 import { assert, expect } from "chai";
 
 import day07, {
+  main,
   CommandLog,
   FileNode,
   DirNode,
@@ -11,7 +12,9 @@ import day07, {
   PWD,
   parseLS,
   TreeBuilder,
+  dirSizes,
 } from "../src/day07";
+import * as fs from "fs";
 
 const exampleInput = `
 $ cd /
@@ -176,5 +179,52 @@ describe("TreeBuilder", () => {
         "      k File(size: 7214296)",
       ].join("\n")
     );
+
+    let treeSizes = dirSizes(tree);
+    expect(treeSizes).to.eql(
+      new Map<string[], number>([
+        [[], 48381165],
+        [["a"], 94853],
+        [["a", "e"], 584],
+        [["d"], 24933642],
+      ])
+    );
+
+    let pairs = Array.from(treeSizes);
+    pairs.sort((a: [string[], number], b: [string[], number]) => b[1] - a[1]);
+    let k = 2;
+    let topK = pairs.slice(0, k);
+    expect(topK).to.eql([
+      [[], 48381165],
+      [["d"], 24933642],
+    ]);
+
+    let answer = 0;
+    topK.forEach((value: [string[], number]) => {
+      answer += value[1];
+    });
+
+    expect(answer).to.equal(48381165 + 24933642);
+
+    let finalAnswer = 73314807;
+    expect(answer).to.equal(finalAnswer);
+  });
+});
+
+describe("main", () => {
+  it("main example", () => {
+    expect(main(exampleInput)).to.equal(94853 + 584);
+  });
+
+  it("crutcher main example", () => {
+    expect(
+      main(fs.readFileSync("tests/crutcher.day7.input.txt").toString())
+    ).to.equal(1390824);
+  });
+
+  it("sofia main example", () => {
+    expect(
+      main(fs.readFileSync("tests/sofia.day7.input.txt").toString())
+    ).to.equal(1989474);
   });
 });
