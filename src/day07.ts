@@ -197,10 +197,11 @@ export function parseLS(ls: string[]): Map<string, TreeNode> {
   return results;
 }
 
-export function dirSizes(root: DirNode): Map<string[], number> {
-  let sizes = new Map<string[], number>();
+export function dirSizes(root: DirNode): Map<string, number> {
+  let sizes = new Map<string, number>();
   root.walk((path: string[], dir: DirNode) => {
-    sizes.set(path, dir.recursiveSize());
+    let abs_path = "/" + path.join("/");
+    sizes.set(abs_path, dir.recursiveSize());
   });
   return sizes;
 }
@@ -208,7 +209,7 @@ export function dirSizes(root: DirNode): Map<string[], number> {
 export function dirsAtMost(dir: DirNode, limit: number = 100000): number {
   let treeSizes = dirSizes(dir);
   let acc = 0;
-  treeSizes.forEach((value: number, key: string[]) => {
+  treeSizes.forEach((value: number, key: string) => {
     if (value <= limit) {
       acc += value;
     }
@@ -217,7 +218,7 @@ export function dirsAtMost(dir: DirNode, limit: number = 100000): number {
   return acc;
 }
 
-export function main(input: string): number {
+export function part1(input: string): number {
   let commandLogs = parseCommandLogs(input);
   let builder = new TreeBuilder();
   commandLogs.forEach((commandLog: CommandLog) => {
@@ -225,6 +226,44 @@ export function main(input: string): number {
   });
 
   return dirsAtMost(builder.root);
+}
+
+export function pickSmallestDirGreaterThan(
+  dir: DirNode,
+  min_size: number
+): { path: string; size: number } {
+  let treeSizes = dirSizes(dir);
+
+  let pairs = Array.from(treeSizes);
+  pairs.sort((a: [string, number], b: [string, number]) => a[1] - b[1]);
+
+  for (const [path, size] of pairs) {
+    if (size >= min_size) {
+      return { path: path, size: size };
+    }
+  }
+
+  throw `Couldn't find dir >= ${min_size}`;
+}
+
+export function part2(input: string): number {
+  let commandLogs = parseCommandLogs(input);
+  let builder = new TreeBuilder();
+  commandLogs.forEach((commandLog: CommandLog) => {
+    builder.watch(commandLog);
+  });
+
+  let root = builder.root;
+
+  let treeSizes = dirSizes(root);
+  let root_size: number = treeSizes.get("/")!;
+
+  let disk_size = 70000000;
+  let free_space = disk_size - root_size;
+  let update_size = 30000000;
+  let needed_size = update_size - free_space;
+
+  return pickSmallestDirGreaterThan(root, needed_size).size;
 }
 
 export default {
